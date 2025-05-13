@@ -2,13 +2,22 @@ switch1:
   hostname: 192.168.1.1
   groups:
     - ios_group
+  data:
+    role: core
+    site: dc1
 
 switch2:
   hostname: 192.168.1.2
   groups:
     - ios_group
+  data:
+    role: access
+    site: dc1
 
 switch3:
   hostname: 192.168.1.3
   groups:
     - ios_group
+  data:
+    role: edge
+    site: branch1
