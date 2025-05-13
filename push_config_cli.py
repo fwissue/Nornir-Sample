@@ -1,5 +1,5 @@
 from nornir import InitNornir
-from nornir_netmiko.tasks import netmiko_send_config
+from nornir_netmiko.tasks import netmiko_send_command, netmiko_send_config
 from datetime import datetime
 import os
 
@@ -49,9 +49,28 @@ timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # === Config push task ===
 def push_config(task):
+    pre_cfg = task.run(task=netmiko_send_command, command_string="show running-config")
+
+    if dry_run:
+        preview_log = f"logs/{task.host.name}_preview_{timestamp}.log"
+        with open(preview_log, "w") as f:
+            f.write(f"# Would send to {task.host.name}:\n")
+            for cmd in config_commands:
+                f.write(f"{cmd}\n")
+        print(f"(DRY-RUN) Saved config preview to {preview_log}")
+        return
+
+    # Save pre-change config (rollback snapshot)
+    snapshot_log = f"logs/{task.host.name}_rollback_{timestamp}.log"
+    with open(snapshot_log, "w") as f:
+        f.write(pre_cfg.result)
+
+    # Apply configuration
     result = task.run(task=netmiko_send_config, config_commands=config_commands)
-    log_file = f"logs/{task.host.name}_config_{timestamp}.log"
-    with open(log_file, "w") as f:
+
+    # Save change output
+    output_log = f"logs/{task.host.name}_config_{timestamp}.log"
+    with open(output_log, "w") as f:
         f.write(result.result)
 
 # === Run task ===
