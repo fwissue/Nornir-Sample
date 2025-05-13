@@ -1,0 +1,8 @@
+ios_group:
+  platform: cisco_ios
+  username: admin
+  password: your_password
+  connection_options:
+    netmiko:
+      extras:
+        secret: enable_password
